@@ -4,404 +4,89 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Owner Dashboard — Litpax Marketing Hub</title>
+<link rel="stylesheet" href="style.css"/>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  * { margin:0; padding:0; box-sizing:border-box; }
-
-  body { font-family:'Inter',sans-serif; background:#f0f2f5; color:#1a1a2e; }
-
-  /* SIDEBAR */
-  .sidebar {
-    position: fixed; top:0; left:0; width:220px; height:100vh;
-    background:#1a237e; display:flex; flex-direction:column; z-index:100;
-  }
-  .sidebar-brand {
-    padding:20px 20px 16px;
-    border-bottom:1px solid rgba(255,255,255,0.1);
-  }
-  .sidebar-brand h2 { color:white; font-size:14px; font-weight:700; }
-  .sidebar-brand p  { color:rgba(255,255,255,0.5); font-size:11px; margin-top:2px; }
-
-  .nav { flex:1; padding:12px 0; }
-  .nav-item {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 20px; color:rgba(255,255,255,0.7);
-    font-size:13px; font-weight:500; cursor:pointer;
-    transition:all 0.2s; border-left:3px solid transparent;
-  }
-  .nav-item:hover { color:white; background:rgba(255,255,255,0.08); }
-  .nav-item.active { color:white; background:rgba(255,255,255,0.12); border-left-color:#7986cb; }
-  .nav-item .icon { font-size:16px; }
-
-  .sidebar-footer {
-    padding:16px 20px;
-    border-top:1px solid rgba(255,255,255,0.1);
-  }
-  .user-chip {
-    display:flex; align-items:center; gap:10px;
-  }
-  .user-avatar {
-    width:32px; height:32px; border-radius:50%;
-    background:rgba(255,255,255,0.2);
-    display:flex; align-items:center; justify-content:center;
-    color:white; font-size:13px; font-weight:700;
-  }
-  .user-info p { color:white; font-size:12px; font-weight:600; }
-  .user-info span { color:rgba(255,255,255,0.5); font-size:11px; }
-  .logout-btn {
-    margin-top:10px; width:100%; padding:8px;
-    background:rgba(255,255,255,0.1); border:none;
-    color:rgba(255,255,255,0.7); border-radius:6px;
-    font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;
-  }
-  .logout-btn:hover { background:rgba(255,255,255,0.2); color:white; }
-
-  /* MAIN */
-  .main { margin-left:220px; padding:24px; min-height:100vh; }
-
-  .page-header {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:24px;
-  }
-  .page-header h1 { font-size:22px; font-weight:700; color:#1a1a2e; }
-  .page-header p  { font-size:13px; color:#888; margin-top:2px; }
-
-  /* STATS */
-  .stats-grid {
-    display:grid; grid-template-columns:repeat(4,1fr); gap:16px;
-    margin-bottom:24px;
-  }
-  .stat-card {
-    background:white; border-radius:12px; padding:20px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.06);
-  }
-  .stat-label { font-size:11px; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
-  .stat-value { font-size:32px; font-weight:700; color:#1a237e; margin:6px 0 2px; }
-  .stat-sub   { font-size:12px; color:#aaa; }
-  .stat-card.red .stat-value   { color:#c62828; }
-  .stat-card.green .stat-value { color:#2e7d32; }
-  .stat-card.amber .stat-value { color:#e65100; }
-
-  /* SECTIONS */
-  .section { display:none; }
-  .section.active { display:block; }
-
-  /* TASK CREATE FORM */
-  .form-card {
-    background:white; border-radius:12px; padding:24px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.06); margin-bottom:20px;
-  }
-  .form-card h3 { font-size:15px; font-weight:700; margin-bottom:20px; color:#1a1a2e; }
-  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  .form-group { display:flex; flex-direction:column; gap:6px; }
-  .form-group.full { grid-column:1/-1; }
-  .form-group label { font-size:11px; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:0.5px; }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    padding:10px 12px; border:1.5px solid #e8e8e8; border-radius:8px;
-    font-size:13px; outline:none; font-family:'Inter',sans-serif;
-    transition:border-color 0.2s; color:#1a1a2e;
-  }
+  .sidebar { background: #1a237e; }
+  .nav-item.active { border-left-color: #7986cb; }
+  .stat-value { color: #1a237e; }
+  .btn-primary { background: #1a237e; }
+  .btn-primary:hover { background: #283593; }
+  .filter-btn.active { background: #1a237e; color: white; border-color: #1a237e; }
+  .toast { background: #1a237e; }
   .form-group input:focus,
   .form-group select:focus,
-  .form-group textarea:focus { border-color:#1a237e; }
-  .form-group textarea { resize:vertical; min-height:80px; }
-
-  .btn-primary {
-    padding:11px 24px; background:#1a237e; color:white;
-    border:none; border-radius:8px; font-size:13px; font-weight:600;
-    cursor:pointer; font-family:'Inter',sans-serif; transition:background 0.2s;
-  }
-  .btn-primary:hover { background:#283593; }
-  .btn-primary:disabled { background:#aaa; cursor:not-allowed; }
-
-  /* TASKS TABLE */
-  .table-card {
-    background:white; border-radius:12px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.06); overflow:hidden;
-  }
-  .table-header {
-    padding:16px 20px; display:flex; align-items:center;
-    justify-content:space-between; border-bottom:1px solid #f0f0f0;
-  }
-  .table-header h3 { font-size:14px; font-weight:700; }
-  .filter-bar { display:flex; gap:8px; }
-  .filter-btn {
-    padding:5px 12px; border:1.5px solid #e8e8e8; border-radius:20px;
-    font-size:11px; font-weight:600; cursor:pointer; background:white;
-    color:#555; font-family:'Inter',sans-serif; transition:all 0.2s;
-  }
-  .filter-btn.active { background:#1a237e; color:white; border-color:#1a237e; }
-
-  table { width:100%; border-collapse:collapse; }
-  th {
-    padding:10px 16px; text-align:left; font-size:11px;
-    font-weight:600; color:#888; text-transform:uppercase;
-    letter-spacing:0.5px; background:#fafafa;
-    border-bottom:1px solid #f0f0f0;
-  }
-  td {
-    padding:12px 16px; font-size:13px; color:#333;
-    border-bottom:1px solid #f7f7f7;
-  }
-  tr:hover td { background:#fafafa; }
-  tr:last-child td { border-bottom:none; }
-
-  .badge {
-    display:inline-block; padding:3px 10px; border-radius:20px;
-    font-size:11px; font-weight:600;
-  }
-  .badge-created    { background:#e8eaf6; color:#3949ab; }
-  .badge-assigned   { background:#e3f2fd; color:#1565c0; }
-  .badge-inprogress { background:#fff3e0; color:#e65100; }
-  .badge-review     { background:#f3e5f5; color:#6a1b9a; }
-  .badge-approved   { background:#e8f5e9; color:#2e7d32; }
-  .badge-rejected   { background:#ffebee; color:#c62828; }
-
-  .priority-high   { color:#c62828; font-weight:600; }
-  .priority-medium { color:#e65100; font-weight:600; }
-  .priority-low    { color:#2e7d32; font-weight:600; }
-
-  .action-btn {
-    padding:4px 10px; border-radius:6px; font-size:11px;
-    font-weight:600; cursor:pointer; border:none;
-    font-family:'Inter',sans-serif; margin-right:4px;
-  }
-  .btn-view     { background:#e8eaf6; color:#3949ab; }
-  .btn-approve  { background:#e8f5e9; color:#2e7d32; }
-  .btn-reject   { background:#ffebee; color:#c62828; }
-
-  /* LOG TABLE */
-  .log-row td:first-child { font-size:11px; color:#aaa; }
-
-  /* MODAL */
-  .modal-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,0.4);
-    display:none; align-items:center; justify-content:center;
-    z-index:1000;
-  }
-  .modal-overlay.open { display:flex; }
-  .modal {
-    background:white; border-radius:16px; width:560px; max-width:90vw;
-    max-height:85vh; overflow-y:auto; padding:28px;
-    box-shadow:0 8px 40px rgba(0,0,0,0.15);
-  }
-  .modal-head {
-    display:flex; align-items:center; justify-content:space-between;
-    margin-bottom:20px;
-  }
-  .modal-head h3 { font-size:16px; font-weight:700; }
-  .modal-close {
-    width:28px; height:28px; background:#f0f0f0; border:none;
-    border-radius:50%; cursor:pointer; font-size:16px; display:flex;
-    align-items:center; justify-content:center;
-  }
-  .detail-row {
-    display:flex; gap:12px; margin-bottom:12px;
-  }
-  .detail-item { flex:1; }
-  .detail-item label { font-size:10px; font-weight:600; color:#aaa; text-transform:uppercase; display:block; margin-bottom:3px; }
-  .detail-item p { font-size:13px; color:#333; font-weight:500; }
-
-  .deliverables-list { margin-top:16px; }
-  .deliverables-list h4 { font-size:12px; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:10px; }
-  .del-item {
-    padding:10px 12px; background:#f8f9ff; border-radius:8px;
-    margin-bottom:8px; font-size:13px;
-  }
-  .del-item a { color:#1a237e; text-decoration:none; font-weight:500; }
-  .del-item a:hover { text-decoration:underline; }
-  .del-meta { font-size:11px; color:#aaa; margin-top:3px; }
-
-  .remarks-input {
-    width:100%; padding:10px 12px; border:1.5px solid #e8e8e8;
-    border-radius:8px; font-size:13px; outline:none;
-    font-family:'Inter',sans-serif; margin:12px 0 8px;
-  }
-  .remarks-input:focus { border-color:#1a237e; }
-
-  .modal-actions { display:flex; gap:8px; margin-top:16px; }
-
-  .empty-state {
-    text-align:center; padding:48px 20px; color:#aaa;
-  }
-  .empty-state p { font-size:14px; margin-top:8px; }
-
-  .toast {
-    position:fixed; bottom:24px; right:24px;
-    background:#1a237e; color:white; padding:12px 20px;
-    border-radius:10px; font-size:13px; font-weight:500;
-    box-shadow:0 4px 20px rgba(0,0,0,0.15);
-    transform:translateY(80px); opacity:0;
-    transition:all 0.3s; z-index:9999;
-  }
-  .toast.show { transform:translateY(0); opacity:1; }
-
-  .spinner {
-    display:inline-block; width:14px; height:14px;
-    border:2px solid rgba(255,255,255,0.4);
-    border-top-color:white; border-radius:50%;
-    animation:spin 0.7s linear infinite; vertical-align:middle; margin-right:6px;
-  }
-  @keyframes spin { to { transform:rotate(360deg); } }
+  .form-group textarea:focus { border-color: #1a237e; }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="sidebar-brand">
     <h2>⚡ Litpax</h2>
     <p>Marketing Hub</p>
   </div>
   <nav class="nav">
-    <div class="nav-item active" onclick="showSection('dashboard')" id="nav-dashboard">
-      <span class="icon">📊</span> Dashboard
-    </div>
-    <div class="nav-item" onclick="showSection('create')" id="nav-create">
-      <span class="icon">➕</span> New Task
-    </div>
-    <div class="nav-item" onclick="showSection('tasks')" id="nav-tasks">
-      <span class="icon">📋</span> All Tasks
-    </div>
-    <div class="nav-item" onclick="showSection('log')" id="nav-log">
-      <span class="icon">📜</span> Activity Log
-    </div>
+    <div class="nav-item active" onclick="showSection('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
+    <div class="nav-item" onclick="showSection('create')" id="nav-create"><span class="icon">➕</span> New Task</div>
+    <div class="nav-item" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> All Tasks</div>
+    <div class="nav-item" onclick="showSection('log')" id="nav-log"><span class="icon">📜</span> Activity Log</div>
   </nav>
   <div class="sidebar-footer">
     <div class="user-chip">
       <div class="user-avatar" id="userAvatar">O</div>
-      <div class="user-info">
-        <p id="userName">Owner</p>
-        <span>Owner</span>
-      </div>
+      <div class="user-info"><p id="userName">Owner</p><span>Owner</span></div>
     </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
 
   <!-- DASHBOARD -->
   <div class="section active" id="section-dashboard">
     <div class="page-header">
-      <div>
-        <h1>Dashboard</h1>
-        <p>Marketing campaigns ka full overview</p>
-      </div>
+      <div><h1>Dashboard</h1><p>Marketing campaigns ka full overview</p></div>
       <button class="btn-primary" onclick="loadDashboard()">🔄 Refresh</button>
     </div>
-
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total Tasks</div>
-        <div class="stat-value" id="stat-total">—</div>
-        <div class="stat-sub">All campaigns</div>
-      </div>
-      <div class="stat-card amber">
-        <div class="stat-label">In Progress</div>
-        <div class="stat-value" id="stat-inprogress">—</div>
-        <div class="stat-sub">Active work</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Pending Review</div>
-        <div class="stat-value" id="stat-review">—</div>
-        <div class="stat-sub">Awaiting approval</div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-label">Overdue</div>
-        <div class="stat-value" id="stat-overdue">—</div>
-        <div class="stat-sub">Past due date</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Total Tasks</div><div class="stat-value" id="stat-total">—</div><div class="stat-sub">All campaigns</div></div>
+      <div class="stat-card amber"><div class="stat-label">In Progress</div><div class="stat-value" id="stat-inprogress">—</div><div class="stat-sub">Active work</div></div>
+      <div class="stat-card"><div class="stat-label">Pending Review</div><div class="stat-value" id="stat-review">—</div><div class="stat-sub">Awaiting approval</div></div>
+      <div class="stat-card red"><div class="stat-label">Overdue</div><div class="stat-value" id="stat-overdue">—</div><div class="stat-sub">Past due date</div></div>
     </div>
-
-    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
-      <div class="stat-card green">
-        <div class="stat-label">Approved</div>
-        <div class="stat-value" id="stat-approved">—</div>
-        <div class="stat-sub">Completed tasks</div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-label">Rejected</div>
-        <div class="stat-value" id="stat-rejected">—</div>
-        <div class="stat-sub">Needs rework</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Created</div>
-        <div class="stat-value" id="stat-created">—</div>
-        <div class="stat-sub">Not yet assigned</div>
-      </div>
+    <div class="stats-grid col3">
+      <div class="stat-card green"><div class="stat-label">Approved</div><div class="stat-value" id="stat-approved">—</div><div class="stat-sub">Completed</div></div>
+      <div class="stat-card red"><div class="stat-label">Rejected</div><div class="stat-value" id="stat-rejected">—</div><div class="stat-sub">Needs rework</div></div>
+      <div class="stat-card"><div class="stat-label">Created</div><div class="stat-value" id="stat-created">—</div><div class="stat-sub">Not assigned</div></div>
     </div>
-
-    <!-- Review Pending Tasks -->
     <div class="table-card">
-      <div class="table-header">
-        <h3>🔍 Review Pending Tasks</h3>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Task</th><th>Type</th><th>Priority</th><th>Agency</th><th>Due Date</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="review-tbody">
-          <tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr>
-        </tbody>
-      </table>
+      <div class="table-header"><h3>🔍 Review Pending Tasks</h3></div>
+      <table><thead><tr><th>Task</th><th>Type</th><th>Priority</th><th>Agency</th><th>Due Date</th><th>Action</th></tr></thead>
+      <tbody id="review-tbody"><tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
   <!-- CREATE TASK -->
   <div class="section" id="section-create">
-    <div class="page-header">
-      <div>
-        <h1>New Task</h1>
-        <p>Marketing agency ke liye naya task create karo</p>
-      </div>
-    </div>
+    <div class="page-header"><div><h1>New Task</h1><p>Marketing agency ke liye naya task create karo</p></div></div>
     <div class="form-card">
       <h3>Task Details</h3>
       <div class="form-grid">
-        <div class="form-group full">
-          <label>Task Title *</label>
-          <input type="text" id="f-title" placeholder="e.g. Instagram Post for Battery Launch"/>
-        </div>
-        <div class="form-group">
-          <label>Type *</label>
+        <div class="form-group full"><label>Task Title *</label><input type="text" id="f-title" placeholder="e.g. Instagram Post for Battery Launch"/></div>
+        <div class="form-group"><label>Type *</label>
           <select id="f-type">
             <option value="">Select type</option>
-            <option>Social Media</option>
-            <option>Branding</option>
-            <option>Advertisement</option>
-            <option>Content Writing</option>
-            <option>Video</option>
-            <option>Print</option>
-            <option>Other</option>
+            <option>Social Media</option><option>Branding</option>
+            <option>Advertisement</option><option>Content Writing</option>
+            <option>Video</option><option>Print</option><option>Other</option>
           </select>
         </div>
-        <div class="form-group">
-          <label>Priority *</label>
-          <select id="f-priority">
-            <option value="">Select</option>
-            <option>High</option>
-            <option>Medium</option>
-            <option>Low</option>
-          </select>
+        <div class="form-group"><label>Priority *</label>
+          <select id="f-priority"><option value="">Select</option><option>High</option><option>Medium</option><option>Low</option></select>
         </div>
-        <div class="form-group full">
-          <label>Description</label>
-          <textarea id="f-desc" placeholder="Task ke baare mein detail likho..."></textarea>
-        </div>
-        <div class="form-group">
-          <label>Due Date</label>
-          <input type="date" id="f-due"/>
-        </div>
-        <div class="form-group">
-          <label>Agency Person (Optional)</label>
-          <input type="text" id="f-agency" placeholder="Agency ka naam"/>
-        </div>
+        <div class="form-group full"><label>Description</label><textarea id="f-desc" placeholder="Task ke baare mein detail likho..."></textarea></div>
+        <div class="form-group"><label>Due Date</label><input type="date" id="f-due"/></div>
+        <div class="form-group"><label>Agency Person (Optional)</label><input type="text" id="f-agency" placeholder="Agency ka naam"/></div>
       </div>
       <br/>
       <button class="btn-primary" id="createBtn" onclick="createTask()">Create Task</button>
@@ -411,10 +96,7 @@
   <!-- ALL TASKS -->
   <div class="section" id="section-tasks">
     <div class="page-header">
-      <div>
-        <h1>All Tasks</h1>
-        <p>Saare campaigns aur tasks ka status</p>
-      </div>
+      <div><h1>All Tasks</h1><p>Saare campaigns aur tasks</p></div>
       <button class="btn-primary" onclick="loadTasks()">🔄 Refresh</button>
     </div>
     <div class="table-card">
@@ -427,44 +109,26 @@
           <button class="filter-btn" onclick="filterTasks('Approved',this)">Approved</button>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Task</th><th>Type</th><th>Priority</th><th>Status</th>
-            <th>Agency</th><th>Due Date</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="tasks-tbody">
-          <tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr>
-        </tbody>
-      </table>
+      <table><thead><tr><th>Task</th><th>Type</th><th>Priority</th><th>Status</th><th>Agency</th><th>Due Date</th><th>Action</th></tr></thead>
+      <tbody id="tasks-tbody"><tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
   <!-- ACTIVITY LOG -->
   <div class="section" id="section-log">
     <div class="page-header">
-      <div>
-        <h1>Activity Log</h1>
-        <p>Har action ka complete record</p>
-      </div>
+      <div><h1>Activity Log</h1><p>Har action ka complete record</p></div>
       <button class="btn-primary" onclick="loadLog()">🔄 Refresh</button>
     </div>
     <div class="table-card">
-      <table>
-        <thead>
-          <tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Task</th><th>Remarks</th></tr>
-        </thead>
-        <tbody id="log-tbody">
-          <tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr>
-        </tbody>
-      </table>
+      <table><thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Task</th><th>Remarks</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
 </div>
 
-<!-- TASK DETAIL MODAL -->
+<!-- MODAL -->
 <div class="modal-overlay" id="taskModal">
   <div class="modal">
     <div class="modal-head">
@@ -477,145 +141,85 @@
 
 <div class="toast" id="toast"></div>
 
+<script src="script.js"></script>
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzYhshyLYchNjDuLm20MrMUTQZz-8lAbnxDJ6H6fuEs2qr884WjIAEE5Ipd9Irr_8K0rg/exec";
-  let user = null;
   let allTasks = [];
+  let user = null;
 
-  // Auth check
   window.onload = () => {
-    const u = sessionStorage.getItem('lmh_user');
-    if (!u) return window.location.href = 'index.html';
-    user = JSON.parse(u);
-    if (user.role !== 'owner') return window.location.href = 'index.html';
-    document.getElementById('userName').textContent = user.name;
-    document.getElementById('userAvatar').textContent = user.name[0].toUpperCase();
+    user = getUser();
+    if (!user || user.role !== 'owner') return window.location.href = 'index.html';
+    initUserChip(user);
     loadDashboard();
     loadTasks();
   };
 
-  function logout() {
-    sessionStorage.clear();
-    window.location.href = 'index.html';
-  }
-
-  function showSection(name) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('section-' + name).classList.add('active');
-    document.getElementById('nav-' + name).classList.add('active');
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  function badgeHtml(status) {
-    const map = {
-      'Created':'badge-created','Assigned':'badge-assigned',
-      'In Progress':'badge-inprogress','Review':'badge-review',
-      'Approved':'badge-approved','Rejected':'badge-rejected'
-    };
-    const cls = map[status] || 'badge-created';
-    return `<span class="badge ${cls}">${status}</span>`;
-  }
-
-  function priorityHtml(p) {
-    const cls = p === 'High' ? 'priority-high' : p === 'Medium' ? 'priority-medium' : 'priority-low';
-    return `<span class="${cls}">${p || '—'}</span>`;
-  }
-
-  async function api(body) {
-    const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(body) });
-    return res.json();
-  }
-
   async function loadDashboard() {
     try {
-      const data = await api({ action:'getDashboard' });
+      const data = await api({ action: 'getDashboard' });
       if (data.success) {
         const s = data.stats;
-        document.getElementById('stat-total').textContent     = s.total;
+        document.getElementById('stat-total').textContent      = s.total;
         document.getElementById('stat-inprogress').textContent = s.inProgress;
-        document.getElementById('stat-review').textContent    = s.review;
-        document.getElementById('stat-overdue').textContent   = s.overdue;
-        document.getElementById('stat-approved').textContent  = s.approved;
-        document.getElementById('stat-rejected').textContent  = s.rejected;
-        document.getElementById('stat-created').textContent   = s.created;
+        document.getElementById('stat-review').textContent     = s.review;
+        document.getElementById('stat-overdue').textContent    = s.overdue;
+        document.getElementById('stat-approved').textContent   = s.approved;
+        document.getElementById('stat-rejected').textContent   = s.rejected;
+        document.getElementById('stat-created').textContent    = s.created;
       }
-      // Load review tasks
-      const td = await api({ action:'getTasks', role:'owner', userName:user.name });
+      const td = await api({ action: 'getTasks', role: 'owner', userName: user.name });
       if (td.success) {
         const review = td.tasks.filter(t => t.Status === 'Review');
         const tbody = document.getElementById('review-tbody');
-        if (!review.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Koi review pending nahi ✅</p></td></tr>';
-        } else {
-          tbody.innerHTML = review.map(t => `
-            <tr>
+        tbody.innerHTML = !review.length
+          ? '<tr><td colspan="6" class="empty-state"><p>Koi review pending nahi ✅</p></td></tr>'
+          : review.map(t => `<tr>
               <td><strong>${t.Title}</strong></td>
-              <td>${t.Type || '—'}</td>
+              <td>${t.Type||'—'}</td>
               <td>${priorityHtml(t.Priority)}</td>
-              <td>${t.Agency_Person || '—'}</td>
-              <td>${t.Due_Date || '—'}</td>
+              <td>${t.Agency_Person||'—'}</td>
+              <td>${t.Due_Date||'—'}</td>
               <td>
                 <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
-                <button class="action-btn btn-approve" onclick="quickUpdate('${t.Task_ID}','Approved','${t.Title}')">✓ Approve</button>
-                <button class="action-btn btn-reject"  onclick="quickUpdate('${t.Task_ID}','Rejected','${t.Title}')">✗ Reject</button>
+                <button class="action-btn btn-approve" onclick="quickUpdate('${t.Task_ID}','Approved','${t.Title}')">✓</button>
+                <button class="action-btn btn-reject"  onclick="quickUpdate('${t.Task_ID}','Rejected','${t.Title}')">✗</button>
               </td>
             </tr>`).join('');
-        }
       }
     } catch(e) { showToast('Error loading dashboard'); }
   }
 
   async function loadTasks() {
     try {
-      const data = await api({ action:'getTasks', role:'owner', userName:user.name });
-      if (data.success) {
-        allTasks = data.tasks;
-        renderTasks(allTasks);
-      }
+      const data = await api({ action: 'getTasks', role: 'owner', userName: user.name });
+      if (data.success) { allTasks = data.tasks; renderTasks(allTasks); }
     } catch(e) { showToast('Error loading tasks'); }
   }
 
   function renderTasks(tasks) {
     const tbody = document.getElementById('tasks-tbody');
-    if (!tasks.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><p>Koi task nahi mila</p></td></tr>';
-      return;
-    }
-    tbody.innerHTML = tasks.map(t => `
-      <tr>
-        <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
-        <td>${t.Type || '—'}</td>
-        <td>${priorityHtml(t.Priority)}</td>
-        <td>${badgeHtml(t.Status)}</td>
-        <td>${t.Agency_Person || '—'}</td>
-        <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date || '—'}</td>
-        <td>
-          <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
-          ${t.Status === 'Review' ? `
-            <button class="action-btn btn-approve" onclick="quickUpdate('${t.Task_ID}','Approved','${t.Title}')">✓</button>
-            <button class="action-btn btn-reject"  onclick="quickUpdate('${t.Task_ID}','Rejected','${t.Title}')">✗</button>
-          ` : ''}
-        </td>
-      </tr>`).join('');
-  }
-
-  function isDue(d) {
-    if (!d) return false;
-    return new Date(d) < new Date();
+    tbody.innerHTML = !tasks.length
+      ? '<tr><td colspan="7" class="empty-state"><p>Koi task nahi</p></td></tr>'
+      : tasks.map(t => `<tr>
+          <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
+          <td>${t.Type||'—'}</td>
+          <td>${priorityHtml(t.Priority)}</td>
+          <td>${badgeHtml(t.Status)}</td>
+          <td>${t.Agency_Person||'—'}</td>
+          <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
+          <td>
+            <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
+            ${t.Status==='Review'?`
+              <button class="action-btn btn-approve" onclick="quickUpdate('${t.Task_ID}','Approved','${t.Title}')">✓</button>
+              <button class="action-btn btn-reject"  onclick="quickUpdate('${t.Task_ID}','Rejected','${t.Title}')">✗</button>`:''}
+          </td>
+        </tr>`).join('');
   }
 
   function filterTasks(status, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    if (status === 'all') renderTasks(allTasks);
-    else renderTasks(allTasks.filter(t => t.Status === status));
+    renderTasks(status === 'all' ? allTasks : allTasks.filter(t => t.Status === status));
   }
 
   async function createTask() {
@@ -625,138 +229,82 @@
     const desc     = document.getElementById('f-desc').value.trim();
     const due      = document.getElementById('f-due').value;
     const agency   = document.getElementById('f-agency').value.trim();
-
-    if (!title || !type || !priority) {
-      showToast('Title, Type aur Priority required hai!');
-      return;
-    }
-
+    if (!title || !type || !priority) { showToast('Title, Type aur Priority required!'); return; }
     const btn = document.getElementById('createBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Creating...';
-
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creating...';
     try {
-      const data = await api({
-        action:'createTask', title, type, priority,
-        description:desc, dueDate:due, createdBy:user.name,
-        assignedTo:'Employee', agencyPerson:agency
-      });
+      const data = await api({ action:'createTask', title, type, priority, description:desc, dueDate:due, createdBy:user.name, assignedTo:'Employee', agencyPerson:agency });
       if (data.success) {
         showToast('✅ Task created: ' + data.taskId);
-        document.getElementById('f-title').value = '';
-        document.getElementById('f-type').value = '';
-        document.getElementById('f-priority').value = '';
-        document.getElementById('f-desc').value = '';
-        document.getElementById('f-due').value = '';
-        document.getElementById('f-agency').value = '';
-        loadTasks();
-        loadDashboard();
+        ['f-title','f-type','f-priority','f-desc','f-due','f-agency'].forEach(id => document.getElementById(id).value = '');
+        loadTasks(); loadDashboard();
       }
     } catch(e) { showToast('Error creating task'); }
-    btn.disabled = false;
-    btn.innerHTML = 'Create Task';
+    btn.disabled = false; btn.innerHTML = 'Create Task';
   }
 
   async function quickUpdate(taskId, status, title) {
-    const remarks = status === 'Rejected' ? prompt('Rejection reason likho:') : '';
+    const remarks = status === 'Rejected' ? prompt('Rejection reason:') || '' : 'Owner ne approve kiya';
     try {
-      await api({
-        action:'updateStatus', taskId, newStatus:status,
-        userName:user.name, userRole:'owner',
-        remarks: remarks || (status === 'Approved' ? 'Owner ne approve kiya' : '')
-      });
-      showToast(`Task ${status}!`);
-      loadDashboard();
-      loadTasks();
+      await api({ action:'updateStatus', taskId, newStatus:status, userName:user.name, userRole:'owner', remarks });
+      showToast(`Task ${status}!`); loadDashboard(); loadTasks();
     } catch(e) { showToast('Error'); }
   }
 
   async function viewTask(taskId) {
     const task = allTasks.find(t => t.Task_ID === taskId);
     if (!task) return;
-
     document.getElementById('modal-title').textContent = task.Title;
-
-    // Load deliverables
     let dels = [];
-    try {
-      const d = await api({ action:'getDeliverables', taskId });
-      if (d.success) dels = d.deliverables;
-    } catch(e) {}
-
+    try { const d = await api({ action:'getDeliverables', taskId }); if (d.success) dels = d.deliverables; } catch(e) {}
     document.getElementById('modal-body').innerHTML = `
       <div class="detail-row">
         <div class="detail-item"><label>Status</label><p>${badgeHtml(task.Status)}</p></div>
-        <div class="detail-item"><label>Type</label><p>${task.Type || '—'}</p></div>
+        <div class="detail-item"><label>Type</label><p>${task.Type||'—'}</p></div>
         <div class="detail-item"><label>Priority</label><p>${priorityHtml(task.Priority)}</p></div>
       </div>
       <div class="detail-row">
-        <div class="detail-item"><label>Created By</label><p>${task.Created_By || '—'}</p></div>
-        <div class="detail-item"><label>Agency Person</label><p>${task.Agency_Person || '—'}</p></div>
-        <div class="detail-item"><label>Due Date</label><p>${task.Due_Date || '—'}</p></div>
+        <div class="detail-item"><label>Created By</label><p>${task.Created_By||'—'}</p></div>
+        <div class="detail-item"><label>Agency</label><p>${task.Agency_Person||'—'}</p></div>
+        <div class="detail-item"><label>Due Date</label><p>${task.Due_Date||'—'}</p></div>
       </div>
-      <div class="detail-item" style="margin-bottom:12px">
-        <label>Description</label>
-        <p>${task.Description || '—'}</p>
-      </div>
-      <div class="detail-row">
-        <div class="detail-item"><label>Created</label><p>${task.Created_Date || '—'}</p></div>
-        <div class="detail-item"><label>Last Updated</label><p>${task.Last_Updated || '—'}</p></div>
-      </div>
-
+      <div class="detail-item" style="margin-bottom:12px"><label>Description</label><p>${task.Description||'—'}</p></div>
       <div class="deliverables-list">
         <h4>📁 Deliverables (${dels.length})</h4>
-        ${dels.length ? dels.map(d => `
-          <div class="del-item">
-            <a href="${d.File_Link}" target="_blank">🔗 ${d.Description || 'Deliverable'}</a>
-            <div class="del-meta">By ${d.Uploaded_By} · ${d.Upload_Date} · ${d.Status}</div>
-          </div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
+        ${dels.length ? dels.map(d=>`<div class="del-item"><a href="${d.File_Link}" target="_blank" style="color:#1a237e">🔗 ${d.Description||'File'}</a><div class="del-meta">By ${d.Uploaded_By} · ${d.Upload_Date} · ${d.Status}</div></div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
       </div>
-
-      ${task.Status === 'Review' ? `
-        <input class="remarks-input" id="modal-remarks" placeholder="Remarks likho (optional)"/>
+      ${task.Status==='Review'?`
+        <input class="remarks-input" id="modal-remarks" placeholder="Remarks (optional)"/>
         <div class="modal-actions">
           <button class="btn-primary" style="background:#2e7d32" onclick="modalUpdate('${taskId}','Approved')">✓ Approve</button>
           <button class="btn-primary" style="background:#c62828" onclick="modalUpdate('${taskId}','Rejected')">✗ Reject</button>
-        </div>
-      ` : ''}
+        </div>`:''}
     `;
-
-    document.getElementById('taskModal').classList.add('open');
+    openModal('taskModal');
   }
 
   async function modalUpdate(taskId, status) {
     const remarks = document.getElementById('modal-remarks')?.value || '';
     try {
       await api({ action:'updateStatus', taskId, newStatus:status, userName:user.name, userRole:'owner', remarks });
-      showToast(`Task ${status}!`);
-      closeModal();
-      loadDashboard();
-      loadTasks();
+      showToast(`Task ${status}!`); closeModal(); loadDashboard(); loadTasks();
     } catch(e) { showToast('Error'); }
-  }
-
-  function closeModal() {
-    document.getElementById('taskModal').classList.remove('open');
   }
 
   async function loadLog() {
     try {
-      const data = await api({ action:'getActivityLog' });
+      const data = await api({ action: 'getActivityLog' });
       const tbody = document.getElementById('log-tbody');
-      if (data.success && data.logs.length) {
-        tbody.innerHTML = data.logs.map(l => `
-          <tr class="log-row">
-            <td>${l.Timestamp}</td>
+      tbody.innerHTML = (data.success && data.logs.length)
+        ? data.logs.map(l=>`<tr>
+            <td style="font-size:11px;color:#aaa">${l.Timestamp}</td>
             <td><strong>${l.User_Name}</strong></td>
-            <td><span class="badge badge-created">${l.User_Role}</span></td>
+            <td>${badgeHtml(l.User_Role)}</td>
             <td>${l.Action}</td>
-            <td style="font-size:11px;color:#888">${l.Task_Title || '—'}</td>
-            <td style="font-size:12px;color:#888">${l.Remarks || '—'}</td>
-          </tr>`).join('');
-      } else {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Koi activity nahi</p></td></tr>';
-      }
+            <td style="font-size:11px;color:#888">${l.Task_Title||'—'}</td>
+            <td style="font-size:12px;color:#888">${l.Remarks||'—'}</td>
+          </tr>`).join('')
+        : '<tr><td colspan="6" class="empty-state"><p>Koi activity nahi</p></td></tr>';
     } catch(e) { showToast('Error loading log'); }
   }
 </script>
