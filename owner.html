@@ -227,7 +227,7 @@
               <td>${taskForBadge(t.Task_For)}</td>
               <td>${priorityHtml(t.Priority)}</td>
               <td>${t.Agency_Person||'—'}</td>
-              <td>${t.Due_Date||'—'}</td>
+              <td>${formatDate(t.Due_Date)}</td>
               <td>
                 <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
                 <button class="action-btn btn-approve" onclick="quickUpdate('${t.Task_ID}','Approved')">✓</button>
@@ -261,7 +261,7 @@
           <td>${priorityHtml(t.Priority)}</td>
           <td>${badgeHtml(t.Status)}</td>
           <td>${t.Agency_Person||'—'}</td>
-          <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
+          <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${formatDate(t.Due_Date)}</td>
           <td>
             <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
             ${t.Status==='Review'?`
@@ -329,12 +329,12 @@
       <div class="detail-row">
         <div class="detail-item"><label>Type</label><p>${task.Type||'—'}</p></div>
         <div class="detail-item"><label>Agency</label><p>${task.Agency_Person||'—'}</p></div>
-        <div class="detail-item"><label>Due Date</label><p>${task.Due_Date||'—'}</p></div>
+        <div class="detail-item"><label>Due Date</label><p>${formatDate(task.Due_Date)}</p></div>
       </div>
       <div class="detail-item" style="margin-bottom:12px"><label>Description</label><p style="font-size:13px;margin-top:4px">${task.Description||'—'}</p></div>
       <div class="deliverables-list">
         <h4>📁 Deliverables (${dels.length})</h4>
-        ${dels.length ? dels.map(d=>`<div class="del-item"><a href="${d.File_Link}" target="_blank" style="color:#1a237e">🔗 ${d.Description||'File'}</a><div class="del-meta">${d.Uploaded_By} · ${d.Upload_Date} · ${d.Status}</div></div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
+        ${dels.length ? dels.map(d=>`<div class="del-item"><a href="${d.File_Link}" target="_blank" style="color:#1a237e">🔗 ${d.Description||'File'}</a><div class="del-meta">${d.Uploaded_By} · ${formatDate(d.Upload_Date)} · ${d.Status}</div></div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
       </div>
       ${task.Status==='Review'?`
         <input class="remarks-input" id="modal-remarks" placeholder="Remarks (optional)"/>
@@ -360,7 +360,7 @@
       const tbody = document.getElementById('log-tbody');
       tbody.innerHTML = (data.success && data.logs.length)
         ? data.logs.map(l=>`<tr>
-            <td style="font-size:11px;color:#aaa">${l.Timestamp}</td>
+            <td style="font-size:11px;color:#aaa">${formatDateTime(l.Timestamp)}</td>
             <td><strong>${l.User_Name}</strong></td>
             <td>${badgeHtml(l.User_Role)}</td>
             <td>${l.Action}</td>
