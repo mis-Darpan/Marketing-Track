@@ -14,7 +14,17 @@
   .filter-btn.active { background: #1b5e20; color: white; border-color: #1b5e20; }
   .toast { background: #1b5e20; }
   .form-group input:focus,
-  .form-group select:focus { border-color: #1b5e20; }
+  .form-group select:focus,
+  .form-group textarea:focus { border-color: #1b5e20; }
+  .tag-internal { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .tag-agency   { background: #f3e5f5; color: #6a1b9a; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+
+  /* Employee assign task form */
+  .assign-card {
+    background: #f0fff4; border: 1.5px solid #a5d6a7;
+    border-radius: 12px; padding: 20px; margin-bottom: 20px;
+  }
+  .assign-card h3 { font-size: 14px; font-weight: 700; color: #1b5e20; margin-bottom: 16px; }
 </style>
 </head>
 <body>
@@ -23,6 +33,7 @@
   <div class="sidebar-brand"><h2>⚡ Litpax</h2><p>Employee Panel</p></div>
   <nav class="nav">
     <div class="nav-item active" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> My Tasks</div>
+    <div class="nav-item" onclick="showSection('assign')" id="nav-assign"><span class="icon">➕</span> Assign to Agency</div>
     <div class="nav-item" onclick="showSection('log');loadLog()" id="nav-log"><span class="icon">📜</span> Activity Log</div>
   </nav>
   <div class="sidebar-footer">
@@ -36,16 +47,16 @@
 
 <div class="main">
 
-  <!-- TASKS -->
+  <!-- MY TASKS -->
   <div class="section active" id="section-tasks">
     <div class="page-header">
-      <div><h1>My Tasks</h1><p>Owner ke tasks manage karo</p></div>
+      <div><h1>My Tasks</h1><p>Owner ke tasks + apne assign kiye hue tasks</p></div>
       <button class="btn-primary" onclick="loadTasks()">🔄 Refresh</button>
     </div>
     <div class="stats-grid">
       <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">All tasks</div></div>
       <div class="stat-card amber"><div class="stat-label">Action Needed</div><div class="stat-value" id="s-action">—</div><div class="stat-sub">Forward karo</div></div>
-      <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" id="s-progress">—</div><div class="stat-sub">Agency working</div></div>
+      <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" id="s-progress">—</div><div class="stat-sub">Chal raha hai</div></div>
       <div class="stat-card red"><div class="stat-label">Review</div><div class="stat-value" id="s-review">—</div><div class="stat-sub">Owner pending</div></div>
     </div>
     <div class="table-card">
@@ -58,12 +69,43 @@
           <button class="filter-btn" onclick="filterTasks('Review',this)">Review</button>
         </div>
       </div>
-      <table><thead><tr><th>Task</th><th>Type</th><th>Priority</th><th>Status</th><th>Agency</th><th>Due</th><th>Action</th></tr></thead>
-      <tbody id="tasks-tbody"><tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
+      <table><thead><tr><th>Task</th><th>Type</th><th>For</th><th>Priority</th><th>Status</th><th>Agency</th><th>Due</th><th>Action</th></tr></thead>
+      <tbody id="tasks-tbody"><tr><td colspan="8" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
-  <!-- LOG -->
+  <!-- ASSIGN TO AGENCY -->
+  <div class="section" id="section-assign">
+    <div class="page-header">
+      <div><h1>Assign to Agency</h1><p>Apni taraf se agency ko kaam do — owner ko log mein dikhega</p></div>
+    </div>
+    <div class="assign-card">
+      <h3>➕ Naya Task Agency ko Assign Karo</h3>
+      <div class="form-grid">
+        <div class="form-group full"><label>Task Title *</label><input type="text" id="a-title" placeholder="e.g. Facebook Ad copy likhni hai"/></div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select id="a-type">
+            <option value="">Select</option>
+            <option>Social Media</option><option>Branding</option>
+            <option>Advertisement</option><option>Content Writing</option>
+            <option>Video</option><option>Print</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Priority *</label>
+          <select id="a-priority"><option value="">Select</option><option>High</option><option>Medium</option><option>Low</option></select>
+        </div>
+        <div class="form-group full"><label>Description</label><textarea id="a-desc" placeholder="Kya karna hai detail mein..."></textarea></div>
+        <div class="form-group"><label>Agency Person *</label><input type="text" id="a-agency" placeholder="Agency ka naam"/></div>
+        <div class="form-group"><label>Due Date</label><input type="date" id="a-due"/></div>
+      </div>
+      <br/>
+      <button class="btn-primary" id="assignBtn" onclick="assignToAgency()">Assign to Agency</button>
+    </div>
+  </div>
+
+  <!-- ACTIVITY LOG -->
   <div class="section" id="section-log">
     <div class="page-header">
       <div><h1>Activity Log</h1><p>Saari activities</p></div>
@@ -77,7 +119,7 @@
 
 </div>
 
-<!-- FORWARD MODAL -->
+<!-- MODAL -->
 <div class="modal-overlay" id="taskModal">
   <div class="modal">
     <div class="modal-head"><h3 id="modal-title">Task</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
@@ -99,6 +141,11 @@
     loadTasks();
   };
 
+  function taskForBadge(val) {
+    if (!val || val === 'Employee Only') return '<span class="tag-internal">👤 Internal</span>';
+    return '<span class="tag-agency">🏢 Agency</span>';
+  }
+
   async function loadTasks() {
     try {
       const data = await api({ action:'getTasks', role:'employee', userName:user.name });
@@ -116,20 +163,25 @@
   function renderTasks(tasks) {
     const tbody = document.getElementById('tasks-tbody');
     tbody.innerHTML = !tasks.length
-      ? '<tr><td colspan="7" class="empty-state"><p>Koi task nahi</p></td></tr>'
-      : tasks.map(t=>`<tr>
-          <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
-          <td>${t.Type||'—'}</td>
-          <td>${priorityHtml(t.Priority)}</td>
-          <td>${badgeHtml(t.Status)}</td>
-          <td>${t.Agency_Person||'<span style="color:#aaa">Not assigned</span>'}</td>
-          <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
-          <td>
-            <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
-            ${t.Status==='Created'?`<button class="action-btn btn-forward" onclick="forwardTask('${t.Task_ID}','${t.Title}')">→ Forward</button>`:''}
-            ${t.Status==='In Progress'?`<button class="action-btn btn-progress" onclick="markReview('${t.Task_ID}','${t.Title}')">→ Review</button>`:''}
-          </td>
-        </tr>`).join('');
+      ? '<tr><td colspan="8" class="empty-state"><p>Koi task nahi</p></td></tr>'
+      : tasks.map(t => {
+          const isInternal = !t.Task_For || t.Task_For === 'Employee Only';
+          return `<tr>
+            <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
+            <td>${t.Type||'—'}</td>
+            <td>${taskForBadge(t.Task_For)}</td>
+            <td>${priorityHtml(t.Priority)}</td>
+            <td>${badgeHtml(t.Status)}</td>
+            <td>${t.Agency_Person||'—'}</td>
+            <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
+            <td>
+              <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
+              ${isInternal && t.Status==='Created' ? `<button class="action-btn btn-forward" onclick="markDone('${t.Task_ID}')">✓ Done</button>` : ''}
+              ${!isInternal && t.Status==='Created' ? `<button class="action-btn btn-forward" onclick="forwardTask('${t.Task_ID}','${t.Title}')">→ Forward</button>` : ''}
+              ${!isInternal && t.Status==='In Progress' ? `<button class="action-btn btn-progress" onclick="markReview('${t.Task_ID}')">→ Review</button>` : ''}
+            </td>
+          </tr>`;
+        }).join('');
   }
 
   function filterTasks(status, btn) {
@@ -138,25 +190,34 @@
     renderTasks(status==='all' ? allTasks : allTasks.filter(t=>t.Status===status));
   }
 
+  // Internal task — employee Done mark kare
+  async function markDone(taskId) {
+    try {
+      await api({ action:'updateStatus', taskId, newStatus:'Approved', userName:user.name, userRole:'employee', remarks:'Employee ne complete kiya' });
+      showToast('✅ Task completed!'); loadTasks();
+    } catch(e) { showToast('Error'); }
+  }
+
+  // Agency task — employee forward kare
   function forwardTask(taskId, title) {
     const task = allTasks.find(t=>t.Task_ID===taskId);
     document.getElementById('modal-title').textContent = 'Forward to Agency';
     document.getElementById('modal-body').innerHTML = `
       <p style="font-size:13px;color:#555;margin-bottom:16px"><strong>${title}</strong></p>
-      <div class="form-group"><label>Agency Person *</label><input type="text" id="fw-agency" placeholder="Agency ka naam" value="${task?.Agency_Person||''}"/></div>
-      <div class="form-group"><label>Remarks</label><input type="text" id="fw-remarks" placeholder="Instruction ho toh likho"/></div>
-      <div class="modal-actions"><button class="btn-primary" onclick="doForward('${taskId}','${title}')">Forward to Agency</button></div>
+      <div class="form-group"><label>Agency Person *</label><input type="text" id="fw-agency" value="${task?.Agency_Person||''}" placeholder="Agency ka naam"/></div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="fw-remarks" placeholder="Koi instruction ho toh..."/></div>
+      <div class="modal-actions"><button class="btn-primary" onclick="doForward('${taskId}')">Forward to Agency</button></div>
     `;
     openModal('taskModal');
   }
 
-  async function doForward(taskId, title) {
+  async function doForward(taskId) {
     const agency  = document.getElementById('fw-agency').value.trim();
     const remarks = document.getElementById('fw-remarks').value.trim();
     if (!agency) { showToast('Agency naam daalo!'); return; }
     try {
       await api({ action:'updateStatus', taskId, newStatus:'In Progress', userName:user.name, userRole:'employee', agencyPerson:agency, remarks:remarks||`Agency ko forward kiya: ${agency}` });
-      showToast('✅ Task forwarded!'); closeModal(); loadTasks();
+      showToast('✅ Forwarded to Agency!'); closeModal(); loadTasks();
     } catch(e) { showToast('Error'); }
   }
 
@@ -168,6 +229,28 @@
     } catch(e) { showToast('Error'); }
   }
 
+  // Employee khud agency ko assign kare
+  async function assignToAgency() {
+    const title   = document.getElementById('a-title').value.trim();
+    const type    = document.getElementById('a-type').value;
+    const priority= document.getElementById('a-priority').value;
+    const desc    = document.getElementById('a-desc').value.trim();
+    const agency  = document.getElementById('a-agency').value.trim();
+    const due     = document.getElementById('a-due').value;
+    if (!title || !type || !priority || !agency) { showToast('Sab required fields bharo!'); return; }
+    const btn = document.getElementById('assignBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Assigning...';
+    try {
+      const data = await api({ action:'createEmployeeTask', title, type, priority, description:desc, agencyPerson:agency, dueDate:due, createdBy:user.name });
+      if (data.success) {
+        showToast('✅ Task assigned to Agency!');
+        ['a-title','a-type','a-priority','a-desc','a-agency','a-due'].forEach(id => document.getElementById(id).value='');
+        loadTasks();
+      }
+    } catch(e) { showToast('Error'); }
+    btn.disabled = false; btn.innerHTML = 'Assign to Agency';
+  }
+
   async function viewTask(taskId) {
     const task = allTasks.find(t=>t.Task_ID===taskId);
     if (!task) return;
@@ -177,13 +260,15 @@
     document.getElementById('modal-body').innerHTML = `
       <div class="detail-row">
         <div class="detail-item"><label>Status</label><p>${badgeHtml(task.Status)}</p></div>
-        <div class="detail-item"><label>Type</label><p>${task.Type||'—'}</p></div>
+        <div class="detail-item"><label>Task For</label><p>${taskForBadge(task.Task_For)}</p></div>
         <div class="detail-item"><label>Priority</label><p>${priorityHtml(task.Priority)}</p></div>
       </div>
       <div class="detail-row">
-        <div class="detail-item"><label>Agency</label><p>${task.Agency_Person||'Not assigned'}</p></div>
+        <div class="detail-item"><label>Agency</label><p>${task.Agency_Person||'—'}</p></div>
         <div class="detail-item"><label>Due Date</label><p>${task.Due_Date||'—'}</p></div>
+        <div class="detail-item"><label>Created By</label><p>${task.Created_By||'—'}</p></div>
       </div>
+      <div class="detail-item" style="margin-bottom:16px"><label>Description</label><p style="font-size:13px;margin-top:4px">${task.Description||'—'}</p></div>
       <div class="deliverables-list">
         <h4>📁 Deliverables (${dels.length})</h4>
         ${dels.length ? dels.map(d=>`<div class="del-item"><a href="${d.File_Link}" target="_blank" style="color:#1b5e20">🔗 ${d.Description||'File'}</a><div class="del-meta">${d.Uploaded_By} · ${d.Upload_Date} · <strong>${d.Status}</strong></div></div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
