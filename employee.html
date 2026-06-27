@@ -4,217 +4,31 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Employee Dashboard — Litpax Marketing Hub</title>
+<link rel="stylesheet" href="style.css"/>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Inter',sans-serif; background:#f0f2f5; color:#1a1a2e; }
-
-  .sidebar {
-    position:fixed; top:0; left:0; width:220px; height:100vh;
-    background:#1b5e20; display:flex; flex-direction:column; z-index:100;
-  }
-  .sidebar-brand { padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,0.1); }
-  .sidebar-brand h2 { color:white; font-size:14px; font-weight:700; }
-  .sidebar-brand p  { color:rgba(255,255,255,0.5); font-size:11px; margin-top:2px; }
-
-  .nav { flex:1; padding:12px 0; }
-  .nav-item {
-    display:flex; align-items:center; gap:10px;
-    padding:10px 20px; color:rgba(255,255,255,0.7);
-    font-size:13px; font-weight:500; cursor:pointer;
-    transition:all 0.2s; border-left:3px solid transparent;
-  }
-  .nav-item:hover { color:white; background:rgba(255,255,255,0.08); }
-  .nav-item.active { color:white; background:rgba(255,255,255,0.12); border-left-color:#a5d6a7; }
-  .nav-item .icon { font-size:16px; }
-
-  .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); }
-  .user-chip { display:flex; align-items:center; gap:10px; }
-  .user-avatar {
-    width:32px; height:32px; border-radius:50%;
-    background:rgba(255,255,255,0.2);
-    display:flex; align-items:center; justify-content:center;
-    color:white; font-size:13px; font-weight:700;
-  }
-  .user-info p { color:white; font-size:12px; font-weight:600; }
-  .user-info span { color:rgba(255,255,255,0.5); font-size:11px; }
-  .logout-btn {
-    margin-top:10px; width:100%; padding:8px;
-    background:rgba(255,255,255,0.1); border:none;
-    color:rgba(255,255,255,0.7); border-radius:6px;
-    font-size:12px; cursor:pointer; font-family:'Inter',sans-serif;
-  }
-  .logout-btn:hover { background:rgba(255,255,255,0.2); color:white; }
-
-  .main { margin-left:220px; padding:24px; min-height:100vh; }
-
-  .page-header {
-    display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;
-  }
-  .page-header h1 { font-size:22px; font-weight:700; }
-  .page-header p  { font-size:13px; color:#888; margin-top:2px; }
-
-  .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
-  .stat-card {
-    background:white; border-radius:12px; padding:20px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.06);
-  }
-  .stat-label { font-size:11px; font-weight:600; color:#888; text-transform:uppercase; letter-spacing:0.5px; }
-  .stat-value { font-size:30px; font-weight:700; color:#1b5e20; margin:6px 0 2px; }
-  .stat-sub   { font-size:12px; color:#aaa; }
-  .stat-card.red .stat-value { color:#c62828; }
-  .stat-card.amber .stat-value { color:#e65100; }
-
-  .section { display:none; }
-  .section.active { display:block; }
-
-  .table-card {
-    background:white; border-radius:12px;
-    box-shadow:0 1px 8px rgba(0,0,0,0.06); overflow:hidden;
-  }
-  .table-header {
-    padding:16px 20px; display:flex; align-items:center;
-    justify-content:space-between; border-bottom:1px solid #f0f0f0;
-  }
-  .table-header h3 { font-size:14px; font-weight:700; }
-
-  .filter-bar { display:flex; gap:8px; }
-  .filter-btn {
-    padding:5px 12px; border:1.5px solid #e8e8e8; border-radius:20px;
-    font-size:11px; font-weight:600; cursor:pointer; background:white;
-    color:#555; font-family:'Inter',sans-serif; transition:all 0.2s;
-  }
-  .filter-btn.active { background:#1b5e20; color:white; border-color:#1b5e20; }
-
-  table { width:100%; border-collapse:collapse; }
-  th {
-    padding:10px 16px; text-align:left; font-size:11px;
-    font-weight:600; color:#888; text-transform:uppercase;
-    letter-spacing:0.5px; background:#fafafa; border-bottom:1px solid #f0f0f0;
-  }
-  td {
-    padding:12px 16px; font-size:13px; color:#333;
-    border-bottom:1px solid #f7f7f7;
-  }
-  tr:hover td { background:#fafafa; }
-  tr:last-child td { border-bottom:none; }
-
-  .badge { display:inline-block; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; }
-  .badge-created    { background:#e8eaf6; color:#3949ab; }
-  .badge-assigned   { background:#e3f2fd; color:#1565c0; }
-  .badge-inprogress { background:#fff3e0; color:#e65100; }
-  .badge-review     { background:#f3e5f5; color:#6a1b9a; }
-  .badge-approved   { background:#e8f5e9; color:#2e7d32; }
-  .badge-rejected   { background:#ffebee; color:#c62828; }
-
-  .priority-high   { color:#c62828; font-weight:600; }
-  .priority-medium { color:#e65100; font-weight:600; }
-  .priority-low    { color:#2e7d32; font-weight:600; }
-
-  .action-btn {
-    padding:4px 10px; border-radius:6px; font-size:11px;
-    font-weight:600; cursor:pointer; border:none;
-    font-family:'Inter',sans-serif; margin-right:4px;
-  }
-  .btn-view     { background:#e8eaf6; color:#3949ab; }
-  .btn-forward  { background:#e8f5e9; color:#2e7d32; }
-  .btn-progress { background:#fff3e0; color:#e65100; }
-
-  .modal-overlay {
-    position:fixed; inset:0; background:rgba(0,0,0,0.4);
-    display:none; align-items:center; justify-content:center; z-index:1000;
-  }
-  .modal-overlay.open { display:flex; }
-  .modal {
-    background:white; border-radius:16px; width:520px; max-width:90vw;
-    max-height:85vh; overflow-y:auto; padding:28px;
-    box-shadow:0 8px 40px rgba(0,0,0,0.15);
-  }
-  .modal-head {
-    display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;
-  }
-  .modal-head h3 { font-size:16px; font-weight:700; }
-  .modal-close {
-    width:28px; height:28px; background:#f0f0f0; border:none;
-    border-radius:50%; cursor:pointer; font-size:16px;
-    display:flex; align-items:center; justify-content:center;
-  }
-
-  .detail-row { display:flex; gap:12px; margin-bottom:12px; }
-  .detail-item { flex:1; }
-  .detail-item label { font-size:10px; font-weight:600; color:#aaa; text-transform:uppercase; display:block; margin-bottom:3px; }
-  .detail-item p { font-size:13px; color:#333; font-weight:500; }
-
-  .form-group { margin-bottom:14px; }
-  .form-group label { font-size:11px; font-weight:600; color:#555; text-transform:uppercase; letter-spacing:0.5px; display:block; margin-bottom:6px; }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    width:100%; padding:10px 12px; border:1.5px solid #e8e8e8; border-radius:8px;
-    font-size:13px; outline:none; font-family:'Inter',sans-serif; transition:border-color 0.2s;
-  }
+  .sidebar { background: #1b5e20; }
+  .nav-item.active { border-left-color: #a5d6a7; }
+  .stat-value { color: #1b5e20; }
+  .btn-primary { background: #1b5e20; }
+  .btn-primary:hover { background: #2e7d32; }
+  .filter-btn.active { background: #1b5e20; color: white; border-color: #1b5e20; }
+  .toast { background: #1b5e20; }
   .form-group input:focus,
-  .form-group select:focus { border-color:#1b5e20; }
-
-  .btn-primary {
-    padding:11px 24px; background:#1b5e20; color:white;
-    border:none; border-radius:8px; font-size:13px; font-weight:600;
-    cursor:pointer; font-family:'Inter',sans-serif; transition:background 0.2s;
-  }
-  .btn-primary:hover { background:#2e7d32; }
-  .btn-primary:disabled { background:#aaa; cursor:not-allowed; }
-
-  .modal-actions { display:flex; gap:8px; margin-top:16px; }
-
-  .deliverables-list { margin-top:16px; }
-  .deliverables-list h4 { font-size:12px; font-weight:700; color:#555; text-transform:uppercase; margin-bottom:10px; }
-  .del-item { padding:10px 12px; background:#f8f9ff; border-radius:8px; margin-bottom:8px; font-size:13px; }
-  .del-item a { color:#1b5e20; text-decoration:none; font-weight:500; }
-  .del-meta { font-size:11px; color:#aaa; margin-top:3px; }
-
-  .empty-state { text-align:center; padding:48px 20px; color:#aaa; }
-  .empty-state p { font-size:14px; margin-top:8px; }
-
-  .toast {
-    position:fixed; bottom:24px; right:24px;
-    background:#1b5e20; color:white; padding:12px 20px;
-    border-radius:10px; font-size:13px; font-weight:500;
-    box-shadow:0 4px 20px rgba(0,0,0,0.15);
-    transform:translateY(80px); opacity:0; transition:all 0.3s; z-index:9999;
-  }
-  .toast.show { transform:translateY(0); opacity:1; }
-
-  .spinner {
-    display:inline-block; width:14px; height:14px;
-    border:2px solid rgba(255,255,255,0.4); border-top-color:white;
-    border-radius:50%; animation:spin 0.7s linear infinite;
-    vertical-align:middle; margin-right:6px;
-  }
-  @keyframes spin { to { transform:rotate(360deg); } }
+  .form-group select:focus { border-color: #1b5e20; }
 </style>
 </head>
 <body>
 
 <div class="sidebar">
-  <div class="sidebar-brand">
-    <h2>⚡ Litpax</h2>
-    <p>Employee Panel</p>
-  </div>
+  <div class="sidebar-brand"><h2>⚡ Litpax</h2><p>Employee Panel</p></div>
   <nav class="nav">
-    <div class="nav-item active" onclick="showSection('tasks')" id="nav-tasks">
-      <span class="icon">📋</span> My Tasks
-    </div>
-    <div class="nav-item" onclick="showSection('log')" id="nav-log">
-      <span class="icon">📜</span> Activity Log
-    </div>
+    <div class="nav-item active" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> My Tasks</div>
+    <div class="nav-item" onclick="showSection('log');loadLog()" id="nav-log"><span class="icon">📜</span> Activity Log</div>
   </nav>
   <div class="sidebar-footer">
     <div class="user-chip">
       <div class="user-avatar" id="userAvatar">E</div>
-      <div class="user-info">
-        <p id="userName">Employee</p>
-        <span>Employee</span>
-      </div>
+      <div class="user-info"><p id="userName">Employee</p><span>Employee</span></div>
     </div>
     <button class="logout-btn" onclick="logout()">Logout</button>
   </div>
@@ -225,36 +39,15 @@
   <!-- TASKS -->
   <div class="section active" id="section-tasks">
     <div class="page-header">
-      <div>
-        <h1>My Tasks</h1>
-        <p>Owner ke tasks manage karo aur agency ko assign karo</p>
-      </div>
+      <div><h1>My Tasks</h1><p>Owner ke tasks manage karo</p></div>
       <button class="btn-primary" onclick="loadTasks()">🔄 Refresh</button>
     </div>
-
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-label">Total</div>
-        <div class="stat-value" id="s-total">—</div>
-        <div class="stat-sub">All tasks</div>
-      </div>
-      <div class="stat-card amber">
-        <div class="stat-label">Action Needed</div>
-        <div class="stat-value" id="s-action">—</div>
-        <div class="stat-sub">Created tasks</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">In Progress</div>
-        <div class="stat-value" id="s-progress">—</div>
-        <div class="stat-sub">Agency working</div>
-      </div>
-      <div class="stat-card red">
-        <div class="stat-label">Review</div>
-        <div class="stat-value" id="s-review">—</div>
-        <div class="stat-sub">Owner review pending</div>
-      </div>
+      <div class="stat-card"><div class="stat-label">Total</div><div class="stat-value" id="s-total">—</div><div class="stat-sub">All tasks</div></div>
+      <div class="stat-card amber"><div class="stat-label">Action Needed</div><div class="stat-value" id="s-action">—</div><div class="stat-sub">Forward karo</div></div>
+      <div class="stat-card"><div class="stat-label">In Progress</div><div class="stat-value" id="s-progress">—</div><div class="stat-sub">Agency working</div></div>
+      <div class="stat-card red"><div class="stat-label">Review</div><div class="stat-value" id="s-review">—</div><div class="stat-sub">Owner pending</div></div>
     </div>
-
     <div class="table-card">
       <div class="table-header">
         <h3>Tasks</h3>
@@ -265,35 +58,20 @@
           <button class="filter-btn" onclick="filterTasks('Review',this)">Review</button>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>Task</th><th>Type</th><th>Priority</th><th>Status</th>
-            <th>Agency</th><th>Due</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="tasks-tbody">
-          <tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr>
-        </tbody>
-      </table>
+      <table><thead><tr><th>Task</th><th>Type</th><th>Priority</th><th>Status</th><th>Agency</th><th>Due</th><th>Action</th></tr></thead>
+      <tbody id="tasks-tbody"><tr><td colspan="7" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
   <!-- LOG -->
   <div class="section" id="section-log">
     <div class="page-header">
-      <div><h1>Activity Log</h1><p>Saari activities ka record</p></div>
+      <div><h1>Activity Log</h1><p>Saari activities</p></div>
       <button class="btn-primary" onclick="loadLog()">🔄 Refresh</button>
     </div>
     <div class="table-card">
-      <table>
-        <thead>
-          <tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Task</th><th>Remarks</th></tr>
-        </thead>
-        <tbody id="log-tbody">
-          <tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr>
-        </tbody>
-      </table>
+      <table><thead><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Task</th><th>Remarks</th></tr></thead>
+      <tbody id="log-tbody"><tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
     </div>
   </div>
 
@@ -302,80 +80,34 @@
 <!-- FORWARD MODAL -->
 <div class="modal-overlay" id="taskModal">
   <div class="modal">
-    <div class="modal-head">
-      <h3 id="modal-title">Task Detail</h3>
-      <button class="modal-close" onclick="closeModal()">✕</button>
-    </div>
+    <div class="modal-head"><h3 id="modal-title">Task</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
     <div id="modal-body"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
+<script src="script.js"></script>
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbzYhshyLYchNjDuLm20MrMUTQZz-8lAbnxDJ6H6fuEs2qr884WjIAEE5Ipd9Irr_8K0rg/exec";
-  let user = null;
   let allTasks = [];
+  let user = null;
 
   window.onload = () => {
-    const u = sessionStorage.getItem('lmh_user');
-    if (!u) return window.location.href = 'index.html';
-    user = JSON.parse(u);
-    if (user.role !== 'employee') return window.location.href = 'index.html';
-    document.getElementById('userName').textContent = user.name;
-    document.getElementById('userAvatar').textContent = user.name[0].toUpperCase();
+    user = getUser();
+    if (!user || user.role !== 'employee') return window.location.href = 'index.html';
+    initUserChip(user);
     loadTasks();
-    loadLog();
   };
-
-  function logout() { sessionStorage.clear(); window.location.href = 'index.html'; }
-
-  function showSection(name) {
-    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    document.getElementById('section-' + name).classList.add('active');
-    document.getElementById('nav-' + name).classList.add('active');
-  }
-
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 3000);
-  }
-
-  function badgeHtml(status) {
-    const map = {
-      'Created':'badge-created','Assigned':'badge-assigned',
-      'In Progress':'badge-inprogress','Review':'badge-review',
-      'Approved':'badge-approved','Rejected':'badge-rejected'
-    };
-    return `<span class="badge ${map[status]||'badge-created'}">${status}</span>`;
-  }
-
-  function priorityHtml(p) {
-    const cls = p==='High'?'priority-high':p==='Medium'?'priority-medium':'priority-low';
-    return `<span class="${cls}">${p||'—'}</span>`;
-  }
-
-  async function api(body) {
-    const res = await fetch(GAS_URL, { method:'POST', body:JSON.stringify(body) });
-    return res.json();
-  }
 
   async function loadTasks() {
     try {
       const data = await api({ action:'getTasks', role:'employee', userName:user.name });
       if (data.success) {
         allTasks = data.tasks;
-        const total    = allTasks.length;
-        const action   = allTasks.filter(t => t.Status === 'Created').length;
-        const progress = allTasks.filter(t => t.Status === 'In Progress').length;
-        const review   = allTasks.filter(t => t.Status === 'Review').length;
-        document.getElementById('s-total').textContent    = total;
-        document.getElementById('s-action').textContent   = action;
-        document.getElementById('s-progress').textContent = progress;
-        document.getElementById('s-review').textContent   = review;
+        document.getElementById('s-total').textContent    = allTasks.length;
+        document.getElementById('s-action').textContent   = allTasks.filter(t=>t.Status==='Created').length;
+        document.getElementById('s-progress').textContent = allTasks.filter(t=>t.Status==='In Progress').length;
+        document.getElementById('s-review').textContent   = allTasks.filter(t=>t.Status==='Review').length;
         renderTasks(allTasks);
       }
     } catch(e) { showToast('Error loading tasks'); }
@@ -383,96 +115,65 @@
 
   function renderTasks(tasks) {
     const tbody = document.getElementById('tasks-tbody');
-    if (!tasks.length) {
-      tbody.innerHTML = '<tr><td colspan="7" class="empty-state"><p>Koi task nahi</p></td></tr>';
-      return;
-    }
-    tbody.innerHTML = tasks.map(t => `
-      <tr>
-        <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
-        <td>${t.Type||'—'}</td>
-        <td>${priorityHtml(t.Priority)}</td>
-        <td>${badgeHtml(t.Status)}</td>
-        <td>${t.Agency_Person||'<span style="color:#aaa">Not assigned</span>'}</td>
-        <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
-        <td>
-          <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
-          ${t.Status === 'Created' ? `<button class="action-btn btn-forward" onclick="forwardTask('${t.Task_ID}','${t.Title}')">→ Forward</button>` : ''}
-          ${t.Status === 'In Progress' ? `<button class="action-btn btn-progress" onclick="markReview('${t.Task_ID}','${t.Title}')">→ Review</button>` : ''}
-        </td>
-      </tr>`).join('');
+    tbody.innerHTML = !tasks.length
+      ? '<tr><td colspan="7" class="empty-state"><p>Koi task nahi</p></td></tr>'
+      : tasks.map(t=>`<tr>
+          <td><strong>${t.Title}</strong><br><small style="color:#aaa">${t.Task_ID}</small></td>
+          <td>${t.Type||'—'}</td>
+          <td>${priorityHtml(t.Priority)}</td>
+          <td>${badgeHtml(t.Status)}</td>
+          <td>${t.Agency_Person||'<span style="color:#aaa">Not assigned</span>'}</td>
+          <td style="color:${isDue(t.Due_Date)?'#c62828':'#333'}">${t.Due_Date||'—'}</td>
+          <td>
+            <button class="action-btn btn-view" onclick="viewTask('${t.Task_ID}')">View</button>
+            ${t.Status==='Created'?`<button class="action-btn btn-forward" onclick="forwardTask('${t.Task_ID}','${t.Title}')">→ Forward</button>`:''}
+            ${t.Status==='In Progress'?`<button class="action-btn btn-progress" onclick="markReview('${t.Task_ID}','${t.Title}')">→ Review</button>`:''}
+          </td>
+        </tr>`).join('');
   }
-
-  function isDue(d) { return d ? new Date(d) < new Date() : false; }
 
   function filterTasks(status, btn) {
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
-    renderTasks(status === 'all' ? allTasks : allTasks.filter(t => t.Status === status));
+    renderTasks(status==='all' ? allTasks : allTasks.filter(t=>t.Status===status));
   }
 
-  async function forwardTask(taskId, title) {
-    const task = allTasks.find(t => t.Task_ID === taskId);
+  function forwardTask(taskId, title) {
+    const task = allTasks.find(t=>t.Task_ID===taskId);
     document.getElementById('modal-title').textContent = 'Forward to Agency';
     document.getElementById('modal-body').innerHTML = `
-      <p style="font-size:13px;color:#555;margin-bottom:16px">
-        <strong>${title}</strong> — agency ko assign karo
-      </p>
-      <div class="form-group">
-        <label>Agency Person Name *</label>
-        <input type="text" id="fw-agency" placeholder="Agency ka naam" value="${task?.Agency_Person||''}"/>
-      </div>
-      <div class="form-group">
-        <label>Remarks (Optional)</label>
-        <input type="text" id="fw-remarks" placeholder="Koi instruction ho toh likho"/>
-      </div>
-      <div class="modal-actions">
-        <button class="btn-primary" onclick="doForward('${taskId}','${title}')">Forward to Agency</button>
-      </div>
+      <p style="font-size:13px;color:#555;margin-bottom:16px"><strong>${title}</strong></p>
+      <div class="form-group"><label>Agency Person *</label><input type="text" id="fw-agency" placeholder="Agency ka naam" value="${task?.Agency_Person||''}"/></div>
+      <div class="form-group"><label>Remarks</label><input type="text" id="fw-remarks" placeholder="Instruction ho toh likho"/></div>
+      <div class="modal-actions"><button class="btn-primary" onclick="doForward('${taskId}','${title}')">Forward to Agency</button></div>
     `;
-    document.getElementById('taskModal').classList.add('open');
+    openModal('taskModal');
   }
 
   async function doForward(taskId, title) {
     const agency  = document.getElementById('fw-agency').value.trim();
     const remarks = document.getElementById('fw-remarks').value.trim();
     if (!agency) { showToast('Agency naam daalo!'); return; }
-
     try {
-      await api({
-        action:'updateStatus', taskId, newStatus:'In Progress',
-        userName:user.name, userRole:'employee',
-        agencyPerson:agency, remarks: remarks || `Agency ko forward kiya: ${agency}`
-      });
-      showToast('✅ Task forwarded to agency!');
-      closeModal();
-      loadTasks();
+      await api({ action:'updateStatus', taskId, newStatus:'In Progress', userName:user.name, userRole:'employee', agencyPerson:agency, remarks:remarks||`Agency ko forward kiya: ${agency}` });
+      showToast('✅ Task forwarded!'); closeModal(); loadTasks();
     } catch(e) { showToast('Error'); }
   }
 
-  async function markReview(taskId, title) {
-    const remarks = prompt('Review ke liye remarks (optional):') || 'Employee ne review ke liye bheja';
+  async function markReview(taskId) {
+    const remarks = prompt('Review remarks (optional):') || 'Employee ne review bheja';
     try {
-      await api({
-        action:'updateStatus', taskId, newStatus:'Review',
-        userName:user.name, userRole:'employee', remarks
-      });
-      showToast('✅ Task sent for Owner review!');
-      loadTasks();
+      await api({ action:'updateStatus', taskId, newStatus:'Review', userName:user.name, userRole:'employee', remarks });
+      showToast('✅ Sent for Owner review!'); loadTasks();
     } catch(e) { showToast('Error'); }
   }
 
   async function viewTask(taskId) {
-    const task = allTasks.find(t => t.Task_ID === taskId);
+    const task = allTasks.find(t=>t.Task_ID===taskId);
     if (!task) return;
     document.getElementById('modal-title').textContent = task.Title;
-
     let dels = [];
-    try {
-      const d = await api({ action:'getDeliverables', taskId });
-      if (d.success) dels = d.deliverables;
-    } catch(e) {}
-
+    try { const d = await api({ action:'getDeliverables', taskId }); if(d.success) dels = d.deliverables; } catch(e) {}
     document.getElementById('modal-body').innerHTML = `
       <div class="detail-row">
         <div class="detail-item"><label>Status</label><p>${badgeHtml(task.Status)}</p></div>
@@ -480,45 +181,31 @@
         <div class="detail-item"><label>Priority</label><p>${priorityHtml(task.Priority)}</p></div>
       </div>
       <div class="detail-row">
-        <div class="detail-item"><label>Created By</label><p>${task.Created_By||'—'}</p></div>
         <div class="detail-item"><label>Agency</label><p>${task.Agency_Person||'Not assigned'}</p></div>
         <div class="detail-item"><label>Due Date</label><p>${task.Due_Date||'—'}</p></div>
       </div>
-      <div class="detail-item" style="margin-bottom:16px">
-        <label>Description</label>
-        <p style="font-size:13px;color:#333;margin-top:4px">${task.Description||'—'}</p>
-      </div>
       <div class="deliverables-list">
         <h4>📁 Deliverables (${dels.length})</h4>
-        ${dels.length ? dels.map(d => `
-          <div class="del-item">
-            <a href="${d.File_Link}" target="_blank">🔗 ${d.Description||'Deliverable'}</a>
-            <div class="del-meta">By ${d.Uploaded_By} · ${d.Upload_Date} · <strong>${d.Status}</strong></div>
-          </div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
+        ${dels.length ? dels.map(d=>`<div class="del-item"><a href="${d.File_Link}" target="_blank" style="color:#1b5e20">🔗 ${d.Description||'File'}</a><div class="del-meta">${d.Uploaded_By} · ${d.Upload_Date} · <strong>${d.Status}</strong></div></div>`).join('') : '<p style="color:#aaa;font-size:13px">Koi deliverable nahi</p>'}
       </div>
     `;
-    document.getElementById('taskModal').classList.add('open');
+    openModal('taskModal');
   }
-
-  function closeModal() { document.getElementById('taskModal').classList.remove('open'); }
 
   async function loadLog() {
     try {
       const data = await api({ action:'getActivityLog' });
       const tbody = document.getElementById('log-tbody');
-      if (data.success && data.logs.length) {
-        tbody.innerHTML = data.logs.map(l => `
-          <tr>
+      tbody.innerHTML = (data.success && data.logs.length)
+        ? data.logs.map(l=>`<tr>
             <td style="font-size:11px;color:#aaa">${l.Timestamp}</td>
             <td><strong>${l.User_Name}</strong></td>
-            <td><span class="badge badge-created">${l.User_Role}</span></td>
+            <td>${badgeHtml(l.User_Role)}</td>
             <td>${l.Action}</td>
             <td style="font-size:11px;color:#888">${l.Task_Title||'—'}</td>
             <td style="font-size:12px;color:#888">${l.Remarks||'—'}</td>
-          </tr>`).join('');
-      } else {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Koi activity nahi</p></td></tr>';
-      }
+          </tr>`).join('')
+        : '<tr><td colspan="6" class="empty-state"><p>Koi activity nahi</p></td></tr>';
     } catch(e) {}
   }
 </script>
