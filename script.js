@@ -57,7 +57,7 @@ function badgeHtml(status) {
     'Approved':    'badge-approved',
     'Rejected':    'badge-rejected'
   };
-  return `<span class="badge ${map[status] || 'badge-created'}">${status}</span>`;
+  return `<span class="badge ${map[status] || 'badge-created'}">${status || '—'}</span>`;
 }
 
 function priorityHtml(p) {
@@ -65,8 +65,28 @@ function priorityHtml(p) {
   return `<span class="${cls}">${p || '—'}</span>`;
 }
 
+// ── DATE HELPERS ────────────────────────────────────────
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+function formatDate(d) {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d;
+  return date.getDate().toString().padStart(2,'0') + '-' + MONTHS[date.getMonth()] + '-' + date.getFullYear();
+}
+
+function formatDateTime(d) {
+  if (!d) return '—';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d;
+  const hh = date.getHours().toString().padStart(2,'0');
+  const mm = date.getMinutes().toString().padStart(2,'0');
+  return date.getDate().toString().padStart(2,'0') + '-' + MONTHS[date.getMonth()] + '-' + date.getFullYear() + ' ' + hh + ':' + mm;
+}
+
 function isDue(d) {
-  return d ? new Date(d) < new Date() : false;
+  if (!d) return false;
+  return new Date(d) < new Date();
 }
 
 // ── USER CHIP INIT ──────────────────────────────────────
