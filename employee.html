@@ -18,13 +18,24 @@
   .form-group textarea:focus { border-color: #1b5e20; }
   .tag-internal { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
   .tag-agency   { background: #f3e5f5; color: #6a1b9a; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
-
-  /* Employee assign task form */
   .assign-card {
     background: #f0fff4; border: 1.5px solid #a5d6a7;
     border-radius: 12px; padding: 20px; margin-bottom: 20px;
   }
   .assign-card h3 { font-size: 14px; font-weight: 700; color: #1b5e20; margin-bottom: 16px; }
+  .req-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid #a5d6a7; margin-bottom: 12px;
+  }
+  .req-card.status-pending  { border-left-color: #e65100; }
+  .req-card.status-done     { border-left-color: #2e7d32; }
+  .req-card.status-rejected { border-left-color: #c62828; }
+  .req-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .req-card-head h3 { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+  .req-meta { display: flex; gap: 16px; margin: 8px 0 12px; flex-wrap: wrap; }
+  .req-meta-item { font-size: 11px; color: #aaa; }
+  .req-meta-item strong { color: #555; }
 </style>
 </head>
 <body>
@@ -34,6 +45,7 @@
   <nav class="nav">
     <div class="nav-item active" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> My Tasks</div>
     <div class="nav-item" onclick="showSection('assign')" id="nav-assign"><span class="icon">➕</span> Assign to Agency</div>
+    <div class="nav-item" onclick="showSection('agentrequests');loadAgencyRequests()" id="nav-agentrequests"><span class="icon">📬</span> Agency Requests</div>
     <div class="nav-item" onclick="showSection('log');loadLog()" id="nav-log"><span class="icon">📜</span> Activity Log</div>
   </nav>
   <div class="sidebar-footer">
@@ -77,7 +89,7 @@
   <!-- ASSIGN TO AGENCY -->
   <div class="section" id="section-assign">
     <div class="page-header">
-      <div><h1>Assign to Agency</h1><p>Apni taraf se agency ko kaam do — owner ko log mein dikhega</p></div>
+      <div><h1>Assign to Agency</h1><p>Apni taraf se agency ko kaam do</p></div>
     </div>
     <div class="assign-card">
       <h3>➕ Naya Task Agency ko Assign Karo</h3>
@@ -103,6 +115,20 @@
       <br/>
       <button class="btn-primary" id="assignBtn" onclick="assignToAgency()">Assign to Agency</button>
     </div>
+  </div>
+
+  <!-- AGENCY REQUESTS -->
+  <div class="section" id="section-agentrequests">
+    <div class="page-header">
+      <div><h1>Agency Requests</h1><p>Marketing agency ko kya chahiye</p></div>
+      <button class="btn-primary" onclick="loadAgencyRequests()">🔄 Refresh</button>
+    </div>
+    <div class="stats-grid col3">
+      <div class="stat-card amber"><div class="stat-label">Pending</div><div class="stat-value" id="ar-pending">—</div><div class="stat-sub">Kaam karna hai</div></div>
+      <div class="stat-card green"><div class="stat-label">Done</div><div class="stat-value" id="ar-done">—</div><div class="stat-sub">Complete</div></div>
+      <div class="stat-card red"><div class="stat-label">Rejected</div><div class="stat-value" id="ar-rejected">—</div><div class="stat-sub">Rejected</div></div>
+    </div>
+    <div id="requests-grid"></div>
   </div>
 
   <!-- ACTIVITY LOG -->
@@ -132,6 +158,7 @@
 <script src="script.js"></script>
 <script>
   let allTasks = [];
+  let allRequests = [];
   let user = null;
 
   window.onload = () => {
@@ -190,7 +217,6 @@
     renderTasks(status==='all' ? allTasks : allTasks.filter(t=>t.Status===status));
   }
 
-  // Internal task — employee Done mark kare
   async function markDone(taskId) {
     try {
       await api({ action:'updateStatus', taskId, newStatus:'Approved', userName:user.name, userRole:'employee', remarks:'Employee ne complete kiya' });
@@ -198,7 +224,6 @@
     } catch(e) { showToast('Error'); }
   }
 
-  // Agency task — employee forward kare
   function forwardTask(taskId, title) {
     const task = allTasks.find(t=>t.Task_ID===taskId);
     document.getElementById('modal-title').textContent = 'Forward to Agency';
@@ -229,7 +254,6 @@
     } catch(e) { showToast('Error'); }
   }
 
-  // Employee khud agency ko assign kare
   async function assignToAgency() {
     const title   = document.getElementById('a-title').value.trim();
     const type    = document.getElementById('a-type').value;
@@ -249,6 +273,55 @@
       }
     } catch(e) { showToast('Error'); }
     btn.disabled = false; btn.innerHTML = 'Assign to Agency';
+  }
+
+  async function loadAgencyRequests() {
+    try {
+      const data = await api({ action:'getAgencyRequests' });
+      if (data.success) {
+        allRequests = data.requests;
+        document.getElementById('ar-pending').textContent  = allRequests.filter(r=>r.Status==='Pending').length;
+        document.getElementById('ar-done').textContent     = allRequests.filter(r=>r.Status==='Done').length;
+        document.getElementById('ar-rejected').textContent = allRequests.filter(r=>r.Status==='Rejected').length;
+        renderRequests(allRequests);
+      }
+    } catch(e) { showToast('Error loading requests'); }
+  }
+
+  function renderRequests(requests) {
+    const grid = document.getElementById('requests-grid');
+    if (!requests.length) {
+      grid.innerHTML = '<div class="empty-state"><p>Koi request nahi hai</p></div>';
+      return;
+    }
+    grid.innerHTML = requests.map(r => `
+      <div class="req-card status-${(r.Status||'pending').toLowerCase()}">
+        <div class="req-card-head">
+          <h3>${r.Title}</h3>
+          <span class="badge badge-${(r.Status||'pending').toLowerCase()}">${r.Status||'Pending'}</span>
+        </div>
+        <p style="font-size:13px;color:#555;margin-bottom:8px">${r.Description||'—'}</p>
+        <div class="req-meta">
+          <div class="req-meta-item">Type: <strong>${r.Type||'—'}</strong></div>
+          <div class="req-meta-item">Due: <strong style="color:${isDue(r.Due_Date)?'#c62828':'#555'}">${formatDate(r.Due_Date)}</strong></div>
+          <div class="req-meta-item">From: <strong>${r.Created_By||'—'}</strong></div>
+          ${r.Remarks ? `<div class="req-meta-item">Remarks: <strong>${r.Remarks}</strong></div>` : ''}
+        </div>
+        ${r.Status === 'Pending' ? `
+          <div style="display:flex;gap:8px;margin-top:4px">
+            <button class="action-btn btn-approve" onclick="updateRequest('${r.Req_ID}','Done')">✓ Mark Done</button>
+            <button class="action-btn btn-reject"  onclick="updateRequest('${r.Req_ID}','Rejected')">✗ Reject</button>
+          </div>` : ''}
+      </div>
+    `).join('');
+  }
+
+  async function updateRequest(reqId, newStatus) {
+    try {
+      await api({ action:'updateAgencyRequest', reqId, newStatus, userName:user.name, userRole:'employee', remarks:`Employee ne ${newStatus} kiya` });
+      showToast(`✅ Request ${newStatus}!`);
+      loadAgencyRequests();
+    } catch(e) { showToast('Error'); }
   }
 
   async function viewTask(taskId) {
