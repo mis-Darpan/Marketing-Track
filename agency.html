@@ -13,7 +13,11 @@
   .btn-primary:hover { background: #6a1b9a; }
   .toast { background: #4a148c; }
   .form-group input:focus,
-  .form-group textarea:focus { border-color: #4a148c; }
+  .form-group textarea:focus,
+  .form-group select:focus { border-color: #4a148c; }
+  .badge-pending  { background: #fff3e0; color: #e65100; }
+  .badge-done     { background: #e8f5e9; color: #2e7d32; }
+  .badge-rejected { background: #ffebee; color: #c62828; }
 </style>
 </head>
 <body>
@@ -23,6 +27,8 @@
   <nav class="nav">
     <div class="nav-item active" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> My Tasks</div>
     <div class="nav-item" onclick="showSection('deliverables');loadDeliverables()" id="nav-deliverables"><span class="icon">📁</span> My Deliverables</div>
+    <div class="nav-item" onclick="showSection('requests');loadMyRequests()" id="nav-requests"><span class="icon">📝</span> My Requests</div>
+    <div class="nav-item" onclick="showSection('newrequest')" id="nav-newrequest"><span class="icon">➕</span> New Request</div>
   </nav>
   <div class="sidebar-footer">
     <div class="user-chip">
@@ -59,6 +65,47 @@
       <div class="table-header"><h3>Uploaded Files</h3></div>
       <table><thead><tr><th>Task</th><th>Description</th><th>Link</th><th>Date</th><th>Status</th></tr></thead>
       <tbody id="del-tbody"><tr><td colspan="5" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- MY REQUESTS -->
+  <div class="section" id="section-requests">
+    <div class="page-header">
+      <div><h1>My Requests</h1><p>Employee ko bheje hue requests</p></div>
+      <button class="btn-primary" onclick="loadMyRequests()">🔄 Refresh</button>
+    </div>
+    <div class="table-card">
+      <div class="table-header"><h3>Requests</h3></div>
+      <table><thead><tr><th>Title</th><th>Type</th><th>Due Date</th><th>Remarks</th><th>Status</th><th>Date</th></tr></thead>
+      <tbody id="req-tbody"><tr><td colspan="6" class="empty-state"><p>Loading...</p></td></tr></tbody></table>
+    </div>
+  </div>
+
+  <!-- NEW REQUEST -->
+  <div class="section" id="section-newrequest">
+    <div class="page-header">
+      <div><h1>New Request</h1><p>Employee se kuch mangna ho toh yahan daalo</p></div>
+    </div>
+    <div class="form-card">
+      <h3>Request Details</h3>
+      <div class="form-grid">
+        <div class="form-group full"><label>Title *</label><input type="text" id="r-title" placeholder="e.g. Product photos chahiye"/></div>
+        <div class="form-group">
+          <label>Type *</label>
+          <select id="r-type">
+            <option value="">Select</option>
+            <option>Pictures</option>
+            <option>Content</option>
+            <option>Video</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Due Date</label><input type="date" id="r-due"/></div>
+        <div class="form-group full"><label>Description *</label><textarea id="r-desc" placeholder="Kya chahiye detail mein..."></textarea></div>
+        <div class="form-group full"><label>Remarks</label><textarea id="r-remarks" placeholder="Koi special requirement..."></textarea></div>
+      </div>
+      <br/>
+      <button class="btn-primary" id="reqBtn" onclick="submitRequest()">📨 Send Request</button>
     </div>
   </div>
 
@@ -175,6 +222,48 @@
         tbody.innerHTML = '<tr><td colspan="5" class="empty-state"><p>Koi deliverable nahi</p></td></tr>';
       }
     } catch(e) { showToast('Error'); }
+  }
+
+  async function loadMyRequests() {
+    try {
+      const data = await api({ action:'getAgencyRequests' });
+      const tbody = document.getElementById('req-tbody');
+      if (data.success && data.requests.length) {
+        const mine = data.requests.filter(r => r.Created_By === user.name);
+        tbody.innerHTML = !mine.length
+          ? '<tr><td colspan="6" class="empty-state"><p>Koi request nahi</p></td></tr>'
+          : mine.map(r=>`<tr>
+              <td><strong>${r.Title||'—'}</strong><br><small style="color:#aaa">${r.Description||''}</small></td>
+              <td>${r.Type||'—'}</td>
+              <td>${formatDate(r.Due_Date)}</td>
+              <td style="font-size:12px;color:#888">${r.Remarks||'—'}</td>
+              <td><span class="badge badge-${(r.Status||'pending').toLowerCase()}">${r.Status||'Pending'}</span></td>
+              <td style="font-size:12px;color:#aaa">${formatDate(r.Created_At)}</td>
+            </tr>`).join('');
+      } else {
+        tbody.innerHTML = '<tr><td colspan="6" class="empty-state"><p>Koi request nahi</p></td></tr>';
+      }
+    } catch(e) { showToast('Error loading requests'); }
+  }
+
+  async function submitRequest() {
+    const title   = document.getElementById('r-title').value.trim();
+    const type    = document.getElementById('r-type').value;
+    const due     = document.getElementById('r-due').value;
+    const desc    = document.getElementById('r-desc').value.trim();
+    const remarks = document.getElementById('r-remarks').value.trim();
+    if (!title || !type || !desc) { showToast('Title, Type aur Description required!'); return; }
+    const btn = document.getElementById('reqBtn');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Sending...';
+    try {
+      const data = await api({ action:'createAgencyRequest', title, type, dueDate:due, description:desc, remarks, createdBy:user.name });
+      if (data.success) {
+        showToast('✅ Request sent!');
+        ['r-title','r-type','r-due','r-desc','r-remarks'].forEach(id => document.getElementById(id).value='');
+        showSection('requests'); loadMyRequests();
+      }
+    } catch(e) { showToast('Error'); }
+    btn.disabled = false; btn.innerHTML = '📨 Send Request';
   }
 </script>
 </body>
