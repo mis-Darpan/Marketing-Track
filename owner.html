@@ -186,12 +186,11 @@
   let user = null;
 
   window.onload = () => {
-    user = getUser();
-    if (!user || user.role !== 'owner') return window.location.href = 'index.html';
-    initUserChip(user);
-    loadDashboard();
-    loadTasks();
-  };
+  user = { name: 'Owner', role: 'owner' };
+  initUserChip(user);
+  loadDashboard();
+  loadTasks();
+};
 
   // Task For toggle
   function setTaskFor(val) {
