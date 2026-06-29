@@ -1,5 +1,5 @@
 // ── CONFIG ─────────────────────────────────────────────
-const GAS_URL = "https://script.google.com/macros/s/AKfycby6-6K7VZhdr7HbPpEFp_pF3rQ5yd68fN1pCkcm4dMNXailoQhdpMDvQhh4nhg3xWq3xQ/exec";
+const GAS_URL = "https://script.google.com/macros/s/AKfycbx6ObPSznIHjJnu_HW1eAhtfefdd5l3sVOCxTM6-oXDZU9vYW_by9nNsND76r39GkJipA/exec";
 
 // ── API CALL ────────────────────────────────────────────
 async function api(body) {
