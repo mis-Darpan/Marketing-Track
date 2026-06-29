@@ -16,8 +16,6 @@
   .form-group input:focus,
   .form-group select:focus,
   .form-group textarea:focus { border-color: #1a237e; }
-
-  /* Task For toggle */
   .task-for-toggle {
     display: flex; gap: 0; border: 1.5px solid #e8e8e8;
     border-radius: 8px; overflow: hidden;
@@ -25,18 +23,27 @@
   .task-for-btn {
     flex: 1; padding: 10px 12px; border: none; background: white;
     font-size: 13px; font-weight: 500; cursor: pointer;
-    font-family: 'Inter', sans-serif; transition: all 0.2s;
-    color: #555;
+    font-family: 'Inter', sans-serif; transition: all 0.2s; color: #555;
   }
   .task-for-btn.active { background: #1a237e; color: white; font-weight: 600; }
   .task-for-btn:first-child { border-right: 1.5px solid #e8e8e8; }
-
   .agency-field { display: none; }
   .agency-field.show { display: flex; }
-
-  /* Task_For badge in table */
   .tag-internal { background: #e3f2fd; color: #1565c0; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
   .tag-agency   { background: #f3e5f5; color: #6a1b9a; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+  .req-card {
+    background: white; border-radius: 12px; padding: 20px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    border-left: 4px solid #a5d6a7; margin-bottom: 12px;
+  }
+  .req-card.status-pending  { border-left-color: #e65100; }
+  .req-card.status-done     { border-left-color: #2e7d32; }
+  .req-card.status-rejected { border-left-color: #c62828; }
+  .req-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+  .req-card-head h3 { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+  .req-meta { display: flex; gap: 16px; margin: 8px 0 4px; flex-wrap: wrap; }
+  .req-meta-item { font-size: 11px; color: #aaa; }
+  .req-meta-item strong { color: #555; }
 </style>
 </head>
 <body>
@@ -47,6 +54,7 @@
     <div class="nav-item active" onclick="showSection('dashboard')" id="nav-dashboard"><span class="icon">📊</span> Dashboard</div>
     <div class="nav-item" onclick="showSection('create')" id="nav-create"><span class="icon">➕</span> New Task</div>
     <div class="nav-item" onclick="showSection('tasks')" id="nav-tasks"><span class="icon">📋</span> All Tasks</div>
+    <div class="nav-item" onclick="showSection('agentrequests');loadAgencyRequests()" id="nav-agentrequests"><span class="icon">📬</span> Agency Requests</div>
     <div class="nav-item" onclick="showSection('log');loadLog()" id="nav-log"><span class="icon">📜</span> Activity Log</div>
   </nav>
   <div class="sidebar-footer">
@@ -90,21 +98,14 @@
     <div class="form-card">
       <h3>Task Details</h3>
       <div class="form-grid">
-
-        <!-- Task For Toggle -->
         <div class="form-group full">
           <label>Task Kiske Liye Hai? *</label>
           <div class="task-for-toggle">
-            <button class="task-for-btn active" id="btn-internal" onclick="setTaskFor('Employee Only')">
-              👤 Employee Only (Internal)
-            </button>
-            <button class="task-for-btn" id="btn-agency" onclick="setTaskFor('Employee → Agency')">
-              🏢 Employee → Agency
-            </button>
+            <button class="task-for-btn active" id="btn-internal" onclick="setTaskFor('Employee Only')">👤 Employee Only (Internal)</button>
+            <button class="task-for-btn" id="btn-agency" onclick="setTaskFor('Employee → Agency')">🏢 Employee → Agency</button>
           </div>
         </div>
         <input type="hidden" id="f-taskfor" value="Employee Only"/>
-
         <div class="form-group full"><label>Task Title *</label><input type="text" id="f-title" placeholder="e.g. Battery Brochure Update"/></div>
         <div class="form-group">
           <label>Type *</label>
@@ -121,13 +122,10 @@
         </div>
         <div class="form-group full"><label>Description</label><textarea id="f-desc" placeholder="Task detail..."></textarea></div>
         <div class="form-group"><label>Due Date</label><input type="date" id="f-due"/></div>
-
-        <!-- Agency field - sirf agency task mein dikhega -->
         <div class="form-group agency-field" id="agency-field-wrap">
           <label>Agency Person (Optional)</label>
-          <input type="text" id="f-agency" placeholder="Agency ka naam — employee bhi assign kar sakta hai"/>
+          <input type="text" id="f-agency" placeholder="Agency ka naam"/>
         </div>
-
       </div>
       <br/>
       <button class="btn-primary" id="createBtn" onclick="createTask()">Create Task</button>
@@ -156,10 +154,24 @@
     </div>
   </div>
 
+  <!-- AGENCY REQUESTS — READONLY -->
+  <div class="section" id="section-agentrequests">
+    <div class="page-header">
+      <div><h1>Agency Requests</h1><p>Marketing agency ne employee se kya manga</p></div>
+      <button class="btn-primary" onclick="loadAgencyRequests()">🔄 Refresh</button>
+    </div>
+    <div class="stats-grid col3">
+      <div class="stat-card amber"><div class="stat-label">Pending</div><div class="stat-value" id="ar-pending">—</div><div class="stat-sub">Employee ka wait</div></div>
+      <div class="stat-card green"><div class="stat-label">Done</div><div class="stat-value" id="ar-done">—</div><div class="stat-sub">Complete</div></div>
+      <div class="stat-card red"><div class="stat-label">Rejected</div><div class="stat-value" id="ar-rejected">—</div><div class="stat-sub">Rejected</div></div>
+    </div>
+    <div id="owner-requests-grid"></div>
+  </div>
+
   <!-- ACTIVITY LOG -->
   <div class="section" id="section-log">
     <div class="page-header">
-      <div><h1>Activity Log</h1><p>Har action ka complete record — employee ne kya kiya, agency ne kya kiya</p></div>
+      <div><h1>Activity Log</h1><p>Har action ka complete record</p></div>
       <button class="btn-primary" onclick="loadLog()">🔄 Refresh</button>
     </div>
     <div class="table-card">
@@ -186,19 +198,17 @@
   let user = null;
 
   window.onload = () => {
-  user = { name: 'Owner', role: 'owner' };
-  initUserChip(user);
-  loadDashboard();
-  loadTasks();
-};
+    user = { name: 'Owner', role: 'owner' };
+    initUserChip(user);
+    loadDashboard();
+    loadTasks();
+  };
 
-  // Task For toggle
   function setTaskFor(val) {
     document.getElementById('f-taskfor').value = val;
     document.getElementById('btn-internal').classList.toggle('active', val === 'Employee Only');
     document.getElementById('btn-agency').classList.toggle('active', val === 'Employee → Agency');
-    const agencyWrap = document.getElementById('agency-field-wrap');
-    agencyWrap.classList.toggle('show', val === 'Employee → Agency');
+    document.getElementById('agency-field-wrap').classList.toggle('show', val === 'Employee → Agency');
   }
 
   async function loadDashboard() {
@@ -273,7 +283,7 @@
   function filterTasks(filter, btn) {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    if (filter === 'all') return renderTasks(allTasks);
+    if (filter === 'all')      return renderTasks(allTasks);
     if (filter === 'internal') return renderTasks(allTasks.filter(t => !t.Task_For || t.Task_For === 'Employee Only'));
     if (filter === 'agency')   return renderTasks(allTasks.filter(t => t.Task_For === 'Employee → Agency'));
     renderTasks(allTasks.filter(t => t.Status === filter));
@@ -287,12 +297,9 @@
     const due     = document.getElementById('f-due').value;
     const agency  = document.getElementById('f-agency').value.trim();
     const taskFor = document.getElementById('f-taskfor').value;
-
     if (!title || !type || !priority) { showToast('Title, Type aur Priority required!'); return; }
-
     const btn = document.getElementById('createBtn');
     btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> Creating...';
-
     try {
       const data = await api({ action:'createTask', title, type, priority, description:desc, dueDate:due, createdBy:user.name, assignedTo:'Employee', agencyPerson:agency, taskFor });
       if (data.success) {
@@ -353,6 +360,38 @@
     } catch(e) { showToast('Error'); }
   }
 
+  async function loadAgencyRequests() {
+    try {
+      const data = await api({ action:'getAgencyRequests' });
+      if (data.success) {
+        const reqs = data.requests;
+        document.getElementById('ar-pending').textContent  = reqs.filter(r=>r.Status==='Pending').length;
+        document.getElementById('ar-done').textContent     = reqs.filter(r=>r.Status==='Done').length;
+        document.getElementById('ar-rejected').textContent = reqs.filter(r=>r.Status==='Rejected').length;
+        const grid = document.getElementById('owner-requests-grid');
+        if (!reqs.length) {
+          grid.innerHTML = '<div class="empty-state"><p>Koi request nahi</p></div>';
+          return;
+        }
+        grid.innerHTML = reqs.map(r => `
+          <div class="req-card status-${(r.Status||'pending').toLowerCase()}">
+            <div class="req-card-head">
+              <h3>${r.Title}</h3>
+              <span class="badge badge-${(r.Status||'pending').toLowerCase()}">${r.Status||'Pending'}</span>
+            </div>
+            <p style="font-size:13px;color:#555;margin-bottom:8px">${r.Description||'—'}</p>
+            <div class="req-meta">
+              <div class="req-meta-item">Type: <strong>${r.Type||'—'}</strong></div>
+              <div class="req-meta-item">Due: <strong>${formatDate(r.Due_Date)}</strong></div>
+              <div class="req-meta-item">From: <strong>${r.Created_By||'—'}</strong></div>
+              ${r.Remarks ? `<div class="req-meta-item">Remarks: <strong>${r.Remarks}</strong></div>` : ''}
+            </div>
+          </div>
+        `).join('');
+      }
+    } catch(e) { showToast('Error loading requests'); }
+  }
+
   async function loadLog() {
     try {
       const data = await api({ action: 'getActivityLog' });
@@ -367,7 +406,7 @@
             <td style="font-size:12px;color:#888">${l.Remarks||'—'}</td>
           </tr>`).join('')
         : '<tr><td colspan="6" class="empty-state"><p>Koi activity nahi</p></td></tr>';
-    } catch(e) { showToast('Error'); }
+    } catch(e) {}
   }
 </script>
 </body>
